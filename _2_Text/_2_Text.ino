@@ -13,10 +13,35 @@
 #define HT1632_CMD_SYSON  0x01
 #define HT1632_CMD_LEDON  0x03
 
-int j;
+PROGMEM byte text[] = {  
+  B00111110, // C
+  B01000001,
+  B01000001,
+  B01000001,
+  B00100010,
+  B00000000, // space
+  B00010001, // i
+  B01011111,
+  B00000001,
+  B00000000, // space
+  B00001110, // a
+  B00010001,
+  B00100001,
+  B00100010,
+  B00011111,
+  B00000000, // space  
+  B00011110, // o
+  B00100001,
+  B00100001,
+  B00100001,
+  B00011110,
+  B00000000, // space  
+  B00111101, // !
+  B01000000  
+};
 
 void setup() {
-
+  
   Serial.begin(57600);
 
   // All PINs are output
@@ -28,11 +53,6 @@ void setup() {
   ht1632c_send_command(HT1632_CMD_SYSON);
   ht1632c_send_command(HT1632_CMD_LEDON);
   
-  j = 0;
-}
-
-void loop() {
-
   // select display
   digitalWrite(DISPLAY_CS, LOW);  
  
@@ -43,22 +63,21 @@ void loop() {
   ht1632c_send_bits(0x00, 1 << 6);
 
   // send data
-  for(int i = 0; i < 256; i++) {
-    digitalWrite(DISPLAY_WR, LOW);
-    if(i == j) digitalWrite(DISPLAY_DATA, HIGH);
-    else digitalWrite(DISPLAY_DATA, LOW);
-    digitalWrite(DISPLAY_WR, HIGH);    
+  for(int i = 0; i < 24; i++) {
+    char mychar = pgm_read_byte(text + i);
+    ht1632c_send_bits(mychar, 1<<7);
+  }
+  for(int i = 0; i < 64; i++) {
+      digitalWrite(DISPLAY_WR, LOW);
+      digitalWrite(DISPLAY_DATA, LOW);
+      digitalWrite(DISPLAY_WR, HIGH);
   }
   
   // unselect display
   digitalWrite(DISPLAY_CS, HIGH);  
-
-  // cycle LED position to be turned on
-  if(j < 255) j++;
-  else j = 0;
-  
-  delay(100);
 }
+
+void loop() {}
 
 
 // ----------------------------------------
